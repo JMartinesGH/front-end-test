@@ -56,8 +56,8 @@ const Quiz = ({ quiz, nextQuiz }) => {
   }, [index, quiz]);
 
   const incrementIndex = () => {
-    setIndex((i) => (i === quiz.questions.length - 1 ? i : i + 1));
     setCorrect(null);
+    setIndex((i) => (i === quiz.questions.length - 1 ? i : i + 1));
   };
 
   const checkAnswer = (answer) => {
@@ -73,6 +73,7 @@ const Quiz = ({ quiz, nextQuiz }) => {
 
   const showResults = () => {
     setResults(true);
+    setCorrect(null);
   };
 
   if (!results && quiz !== undefined) {
@@ -96,13 +97,14 @@ const Quiz = ({ quiz, nextQuiz }) => {
           increment={incrementIndex}
           length={quiz.questions.length - 1}
           results={showResults}
+          disabled={correct !== null ? false : true}
         />
       </>
     );
   } else {
     return (
       <>
-        <h1>Results</h1>
+        <h1>Results: {quiz.title}</h1>
         <h2>
           <strong>{numCorrect}</strong> out of{' '}
           <strong>{quiz.questions.length}</strong>
@@ -122,10 +124,18 @@ const Quiz = ({ quiz, nextQuiz }) => {
   }
 };
 
-const NextButtons = ({ index, increment, length, results }) => {
+const NextButtons = ({ index, increment, length, results, disabled }) => {
   if (index === length) {
-    return <button onClick={results}>Show Results</button>;
+    return (
+      <button onClick={results} disabled={disabled}>
+        Show Results
+      </button>
+    );
   } else {
-    return <button onClick={increment}>Next Question</button>;
+    return (
+      <button onClick={increment} disabled={disabled}>
+        Next Question
+      </button>
+    );
   }
 };
