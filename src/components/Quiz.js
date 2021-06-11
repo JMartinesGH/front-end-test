@@ -1,4 +1,5 @@
 import React from 'react';
+import { getMessage } from '../data/messages';
 import { shuffleArray } from '../utils/utils';
 
 export const QuizWrapper = ({ quizzes }) => {
@@ -61,7 +62,7 @@ const Quiz = ({ quiz, nextQuiz }) => {
   };
 
   const checkAnswer = (answer) => {
-    if (answer == quiz.questions[index].correctAnswer) {
+    if (answer === quiz.questions[index].correctAnswer) {
       console.log('correct');
       setCorrect(true);
       setNumCorrect((numCorrect) => numCorrect + 1);
@@ -109,6 +110,7 @@ const Quiz = ({ quiz, nextQuiz }) => {
           <strong>{numCorrect}</strong> out of{' '}
           <strong>{quiz.questions.length}</strong>
         </h2>
+        <h4>{getMessage()}</h4>
         <button
           onClick={() => {
             setNumCorrect(0);
