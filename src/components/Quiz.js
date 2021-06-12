@@ -9,15 +9,6 @@ export const QuizWrapper = ({ quizzes }) => {
   const [index, setIndex] = React.useState(0);
   const [finished, setFinished] = React.useState(false);
 
-  // const generateQuizStats = () => {
-  //   let array = [];
-  //   for (let i = 0; i < quizzes.length; i++) {
-  //     array.push({ title: quizzes[i].title, count: 0 });
-  //   }
-  //   return array;
-  // };
-  // const quizStats = generateQuizStats();
-
   const nextQuiz = () => {
     console.log('next quiz');
     if (index < quizzes.length - 1) {
