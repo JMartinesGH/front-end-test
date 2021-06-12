@@ -1,10 +1,22 @@
 import React from 'react';
-import { getMessage } from '../data/messages';
+import { Results } from './Results';
 import { shuffleArray } from '../utils/utils';
+import { Answer, AnswerList } from './styled/Answers';
+import { NextButton } from './styled/Buttons';
+import { NextButtons } from './NextButtons';
 
 export const QuizWrapper = ({ quizzes }) => {
   const [index, setIndex] = React.useState(0);
   const [finished, setFinished] = React.useState(false);
+
+  // const generateQuizStats = () => {
+  //   let array = [];
+  //   for (let i = 0; i < quizzes.length; i++) {
+  //     array.push({ title: quizzes[i].title, count: 0 });
+  //   }
+  //   return array;
+  // };
+  // const quizStats = generateQuizStats();
 
   const nextQuiz = () => {
     console.log('next quiz');
@@ -28,7 +40,7 @@ export const QuizWrapper = ({ quizzes }) => {
     return (
       <>
         <p>No more quizzes</p>
-        <button onClick={reset}>Try again?</button>
+        <NextButton onClick={reset}>Try again?</NextButton>
       </>
     );
   }
@@ -43,7 +55,16 @@ const Quiz = ({ quiz, nextQuiz }) => {
   const [correct, setCorrect] = React.useState(null);
   const [numCorrect, setNumCorrect] = React.useState(0);
   const [results, setResults] = React.useState(null);
+  const [answered, setAnswered] = React.useState(false);
+  const [quizStats, setQuizStats] = React.useState([]);
 
+  React.useEffect(() => {
+    setQuizStats([]);
+  }, []);
+  // set the initial state of answers,
+  // I understand this is highly unusual
+  // but I couldn't think of a better pattern for this
+  // still early days with hooks
   React.useEffect(() => {
     if (index === 0 && answers === null) {
       setAnswers((answers) => shuffleArray(answers));
@@ -56,25 +77,40 @@ const Quiz = ({ quiz, nextQuiz }) => {
     }
   }, [index, quiz]);
 
+  // incrementIndex
   const incrementIndex = () => {
     setCorrect(null);
     setIndex((i) => (i === quiz.questions.length - 1 ? i : i + 1));
+    setAnswered(false);
   };
 
-  const checkAnswer = (answer) => {
+  //check answer and set up breakdown of questions answered
+  const checkAnswer = (answer, question) => {
+    setAnswered(true);
     if (answer === quiz.questions[index].correctAnswer) {
       console.log('correct');
       setCorrect(true);
       setNumCorrect((numCorrect) => numCorrect + 1);
+      setAnswered(true);
+      setQuizStats((quizStats) => [
+        ...quizStats,
+        [question, answer, 'correct'],
+      ]);
     } else {
       console.warn('incorrect');
       setCorrect(false);
+      setQuizStats((quizStats) => [
+        ...quizStats,
+        [question, answer, 'incorrect'],
+      ]);
     }
   };
 
+  // switch to results view and rest answered and correct
   const showResults = () => {
     setResults(true);
     setCorrect(null);
+    setAnswered(false);
   };
 
   if (!results && quiz !== undefined) {
@@ -82,15 +118,18 @@ const Quiz = ({ quiz, nextQuiz }) => {
       <>
         <h1>{quiz.title}</h1>
         <h4>{quiz.questions[index].text}</h4>
-        <ul>
+        <AnswerList className={answered ? `disabled` : ``}>
           {answers.map((answer, i) => {
             return (
-              <li key={i} onClick={() => checkAnswer(answer)}>
+              <Answer
+                key={i}
+                onClick={() => checkAnswer(answer, quiz.questions[index].text)}
+              >
                 {answer}
-              </li>
+              </Answer>
             );
           })}
-        </ul>
+        </AnswerList>
         {correct && <div>Correct</div>}
         {!correct && correct !== null && <div>Incorrect</div>}
         <NextButtons
@@ -104,40 +143,19 @@ const Quiz = ({ quiz, nextQuiz }) => {
     );
   } else {
     return (
-      <>
-        <h1>Results: {quiz.title}</h1>
-        <h2>
-          <strong>{numCorrect}</strong> out of{' '}
-          <strong>{quiz.questions.length}</strong>
-        </h2>
-        <h4>{getMessage()}</h4>
-        <button
-          onClick={() => {
-            setNumCorrect(0);
-            setIndex(0);
-            setResults(null);
-            nextQuiz();
-          }}
-        >
-          Next Quiz
-        </button>
-      </>
-    );
-  }
-};
-
-const NextButtons = ({ index, increment, length, results, disabled }) => {
-  if (index === length) {
-    return (
-      <button onClick={results} disabled={disabled}>
-        Show Results
-      </button>
-    );
-  } else {
-    return (
-      <button onClick={increment} disabled={disabled}>
-        Next Question
-      </button>
+      <Results
+        title={quiz.title}
+        numCorrect={numCorrect}
+        numQuestions={quiz.questions.length}
+        onNext={() => {
+          setNumCorrect(0);
+          setIndex(0);
+          setResults(null);
+          nextQuiz();
+          setQuizStats([]);
+        }}
+        quizStats={quizStats}
+      />
     );
   }
 };
